@@ -1,0 +1,72 @@
+qname,description,main,analysis_label
+StartDate,Start Date,Start Date,StartDate
+EndDate,End Date,End Date,EndDate
+Status,Response Type,Response Type,Status
+Progress,Progress,Progress,Progress
+Duration (in seconds),Duration (in seconds),Duration (in seconds),Duration (in seconds)
+Finished,Finished,Finished,Finished
+RecordedDate,Recorded Date,Recorded Date,RecordedDate
+ResponseId,Response ID,Response ID,ResponseId
+DistributionChannel,Distribution Channel,Distribution Channel,DistributionChannel
+UserLanguage,User Language,User Language,UserLanguage
+Q_RecaptchaScore,Q_RecaptchaScore,Q_RecaptchaScore,Q_RecaptchaScore
+Q_RelevantIDDuplicate,Q_RelevantIDDuplicate,Q_RelevantIDDuplicate,Q_RelevantIDDuplicate
+Q_DuplicateRespondent,Q_DuplicateRespondent,Q_DuplicateRespondent,Q_DuplicateRespondent
+Q_RelevantIDDuplicateScore,Q_RelevantIDDuplicateScore,Q_RelevantIDDuplicateScore,Q_RelevantIDDuplicateScore
+Q_RelevantIDFraudScore,Q_RelevantIDFraudScore,Q_RelevantIDFraudScore,Q_RelevantIDFraudScore
+Q_RelevantIDLastStartDate,Q_RelevantIDLastStartDate,Q_RelevantIDLastStartDate,Q_RelevantIDLastStartDate
+Q3,confirm_age,confirm_age,confirm_age
+Q4,confirm_informed,confirm_informed,confirm_informed
+Q5,confirm_consent,confirm_consent,confirm_consent
+Q6,organization_type - Selected Choice,organization_type,organization_type_choice
+Q6_4_TEXT,organization_type - Other (self-describe) - Text,organization_type,organization_type_text
+Q7,country,country,country
+Q8,current_position - Selected Choice,current_position,current_position_choice
+Q8_6_TEXT,current_position - Other (self-describe) - Text,current_position,current_position_text
+Q9,years_research_exp,years_research_exp,years_research_exp
+Q10,gender,gender,gender
+Q11,research_area,research_area,research_area
+Q12,peer_review,peer_review,peer_review
+Q13,years_program_exp,years_program_exp,years_program_exp
+Q14,program_freq,program_freq,program_freq
+Q15,program_lang - Selected Choice,program_lang,program_lang_choice
+Q15_13_TEXT,program_lang - Other - Text,program_lang,program_lang_text
+Q17,code_publishing,code_publishing,code_publishing
+Q18,code_reuse_inner,code_reuse_inner,code_reuse_inner
+Q19,code_reuse_outer,code_reuse_outer,code_reuse_outer
+Q20,devel_practices,devel_practices,devel_practices
+Q21_1,devel_practices_freq - Version control,devel_practices_freq,devel_practices_freq_version
+Q21_2,devel_practices_freq - Code review,devel_practices_freq,devel_practices_freq_review
+Q21_3,devel_practices_freq - Continuous integration,devel_practices_freq,devel_practices_freq_ci
+Q21_4,devel_practices_freq - Unit testing,devel_practices_freq,devel_practices_freq_unit
+Q21_5,devel_practices_freq - Regression testing,devel_practices_freq,devel_practices_freq_regression
+Q21_6,devel_practices_freq - System testing,devel_practices_freq,devel_practices_freq_system
+Q22,code_reviewer - Selected Choice,code_reviewer,code_reviewer_choice
+Q22_4_TEXT,code_reviewer - Someone else (please write in) - Text,code_reviewer,code_reviewer_text
+Q23,genai_tool_exp - Selected Choice,genai_tool_exp,genai_tool_exp_choice
+Q23_11_TEXT,genai_tool_exp - Other (please write in) - Text,genai_tool_exp,genai_tool_exp_text
+Q24,genai_tool_freq,genai_tool_freq,genai_tool_freq
+Q25,non_adoption_factors,non_adoption_factors,non_adoption_factors
+Q26,other_info,other_info,other_info
+Q27,consent_to_contact,consent_to_contact,consent_to_contact
+Q28,email,email,email
+Q29,genai_primary_tool - Selected Choice,genai_primary_tool,genai_primary_tool_choice
+Q29_11_TEXT,genai_primary_tool - Other (please write in) - Text,genai_primary_tool,genai_primary_tool_text
+Q30,genai_access_mode - Selected Choice,genai_access_mode,genai_access_mode_choice
+Q30_5_TEXT,genai_access_mode - Other (please write in) - Text,genai_access_mode,genai_access_mode_text
+Q31,genai_lines_accepted,genai_lines_accepted,genai_lines_accepted
+Q31_s1,genai_space_scale - I find myself less frustrated during coding sessions when using this tool.,genai_space_scale,space_s1
+Q31_p1,"genai_space_scale - While working with an unfamiliar language, I make progress faster when using this tool.",genai_space_scale,space_p1
+Q31_p2,genai_space_scale - The code I write using this tool is better than the code I would have written without it.,genai_space_scale,space_p2
+Q31_a1,genai_space_scale - I produce more lines of code with this tool than I would have without it.,genai_space_scale,space_a1
+Q31_c1,genai_space_scale - I learn from the responses this tool gives me.,genai_space_scale,space_c1
+Q31_c2,genai_space_scale - I am better able to understand other people's code with this tool.,genai_space_scale,space_c2
+Q31_e1,genai_space_scale - I complete programming tasks faster when using this tool.,genai_space_scale,space_e1
+Q31_e2,genai_space_scale - I spend less time searching for information or examples when using this tool.,genai_space_scale,space_e2
+Q31_productive_global,genai_space_scale - I am more productive when I use this tool.,genai_space_scale,space_global
+Q33,use_case_goal,use_case_goal,use_case_goal
+Q34,use_case_approach,use_case_approach,use_case_approach
+Q35,use_case_evaluation,use_case_evaluation,use_case_evaluation
+Q36,use_case_conf_solo,use_case_conf_solo,use_case_conf_solo
+Q37,use_case_conf_genai,use_case_conf_genai,use_case_conf_genai
+Q38,use_case_conf_eval,use_case_conf_eval,use_case_conf_eval
