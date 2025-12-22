@@ -6,6 +6,7 @@ This code is provided as a record of the data analysis steps reported in the man
 - Variables are transformed for statistical modeling in `transform_`* files (for example, coding responses as ordered factors for Likert-scale survey items)
 - Summary statistics and accompanying figures/tables are computed `report_`* files.
 - Hypothesis testing and modeling pertaining to factors associated with perceived productivity are in `productivity_factors.R`.
+- A copy of the Qualtrics survey, which includes all questions and text presented to participants, is included (`qualtrics_survey.pdf`). Note that there is branching logic reported in the manuscript.
 
 
 This repository may be updated during the peer review process.
