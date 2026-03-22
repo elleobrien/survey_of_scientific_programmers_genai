@@ -6,40 +6,31 @@ library(corrplot)
 library(stargazer)
 
 rm(list = ls())
-# read rds from data/interim
-dev_df <- readRDS("data/interim/dev_variables.rds")
+source("prepare_data.R")
 
-# read rds from demographic
-demo_df <- readRDS("data/interim/demo_variables.rds")
-
-# read rds from genai_variables
-genai_df <- readRDS("data/interim/genai_variables.rds")
-
-big_df <- dev_df %>%
-  select(ResponseId,ends_with("_score"), code_reuse_inner, code_reuse_outer,code_publishing) %>%
-  left_join(demo_df, by = "ResponseId") %>%
-  left_join(genai_df, by = "ResponseId") %>%
+big_df <- survey_df %>%
   # filter out anyone who indicated they don't use a genAI tool
   filter(reports_no_adoption == FALSE) %>%
   filter(lists_no_tools_tried == FALSE)
 
 #if someone wasn't presented the SPACE questions, don't include in this analysis.
           # this would be anyone who indicated they never use genAI/tried but gave up,
-          # or lists NO genAI tools tried. 
+          # or lists NO genAI tools tried.
 
-### make a correlation matrix of numerical/ordered variables 
+
+### make a correlation matrix of numerical/ordered variables
 cor_vars <- c("space_avg", "code_reuse_inner", "code_reuse_outer",
-              "dev_score", "version_score", "review_score", "ci_score", 
+              "dev_score", "version_score", "review_score", "ci_score",
               "unit_score", "regression_score", "system_score",
               "logyears_program_exp",
               "genai_lines_accepted","program_freq")
 
 # Make a hetcor matrix with polychor
 cormat <- big_df %>%
-  select(cor_vars) %>%
-  hetcor(., ML = TRUE, use = "pairwise.complete.obs") 
+  select(all_of(cor_vars)) %>%
+  hetcor(., ML = TRUE, use = "pairwise.complete.obs")
 
-# human readable labels 
+# human readable labels
 feature_labels <- c("Perceived Productivity Score", "Code Reuse (inner)", "Code Reuse (outer)",
                     "Development Practices Score", "Version Control Score", "Code Review Score", "Continuous Integration Score",
                     "Unit Testing Score", "Regression Testing Score", "System Testing Score",
@@ -50,12 +41,12 @@ colnames(cormat$correlations) <- feature_labels
 
 # png
 png(filename = "figures/big_correlation_matrix.png", width = 10, height = 8, units = "in", res = 300)
-corrplot(cormat$correlations, 
+corrplot(cormat$correlations,
          method = "color",
          # use cormat labels
          order = "hclust",
-         tl.col = "black", 
-         tl.srt = 45, 
+         tl.col = "black",
+         tl.srt = 45,
          number.cex = 0.7)
 dev.off()
 
@@ -74,8 +65,8 @@ big_df %>%
   ggplot(., aes(x = genai_lines_accepted, y = spce_avg))+
   geom_boxplot() +
   ylab("Perceived Productivity Score") +
-  xlab("")+
-  ggtitle("How many lines of generated code suggestions do you typically accept at\none time when working with this tool?")
+  xlab("\"How many lines of generated code suggestions do you typically accept at\none time when working with this tool?\"")+
+  ggtitle("The relationship between perceived productivity and volume of code accepted")
 
 ggsave("figures/space_by_lines_accepted.png", width = 7, height = 5, dpi = 300)
 
@@ -86,7 +77,7 @@ lm(space_avg ~ as.numeric(genai_lines_accepted), data = big_df)  %>%
 
 # Based on implementation suggested by https://stackoverflow.com/questions/16281667/p-value-for-polyserial-correlation
 poly_to_pvalue <- function(polyserial_output) {
-  std.err <- sqrt(polyserial_output$var[1, 1]) 
+  std.err <- sqrt(polyserial_output$var[1, 1])
   p_value <- 2 * pnorm(-abs(polyserial_output$rho / std.err))
   return(p_value)
 }
@@ -114,7 +105,7 @@ anova_table <- anova(m2, m1)
 
 ggplot(big_df, aes(x = logyears_program_exp, y = space_avg)) +
   geom_point()+
-  geom_smooth(method = "lm") + 
+  geom_smooth(method = "lm") +
   xlab(expression(Log[10]~"Years of Programming Experience"))+
   ylab("Perceived producivity score")+
   facet_wrap(~dev_median_split)
@@ -132,27 +123,21 @@ lm(space_avg ~ research_area_major, data = big_df) %>%
   summary()
 anova(lm(space_avg ~ research_area_major, data = big_df))
 
-# Lines accepted by tool type
-dev_tool_list <- c("GitHub Copilot", "Cursor", "Claude Code")
-general_tool_list <- c("ChatGPT", "Claude", "Microsoft Copilot", "Perplexity")
 
-big_df <- big_df %>%
-  filter(!is.na(genai_lines_accepted)) %>%
-  mutate(tool_type = case_when(
-    genai_primary_tool_choice %in% dev_tool_list ~ "Development-focused tool",
-    genai_primary_tool_choice %in% general_tool_list ~ "General-purpose tool",
-    TRUE ~ "Unknown"
-  ))
+### SPACE item correlation matrix (Figure A7 in manuscript)
+space_cor_df <- big_df %>%
+  select(starts_with("space_")) 
 
-table(big_df$tool_type)
-lm(as.numeric(genai_lines_accepted) ~ tool_type, data = subset(big_df, tool_type != "Unknown")) %>%
-  summary()
+space_cor_matrix <- hetcor(space_cor_df, ML = TRUE, use = "pairwise.complete.obs")
 
-anova(lm(as.numeric(genai_lines_accepted) ~ tool_type, data = subset(big_df, tool_type != "Unknown")))
+png(filename = "./figures/genai_space_correlation_matrix.png",
+    width = 8, height = 6, units = "in", res = 300)
+corrplot(space_cor_matrix$correlations,
+         type = "lower",
+         method = "color",
+         tl.col = "black",
+         addCoef.col = "white",
+         tl.srt = 45,
+         number.cex = 0.7)
+dev.off()
 
-ggplot(big_df %>% filter(tool_type != "Unknown"), aes(x = genai_lines_accepted)) +
-  geom_bar() +
-  xlab("Type of Generative AI Tool Used")+
-  ylab("Typical Lines of Code Accepted")+ 
-  facet_wrap(~tool_type, nrow = 2)+
-  ggtitle("Developers using general-purpose genAI tools report accepting more lines of code at once")
