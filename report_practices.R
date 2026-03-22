@@ -8,8 +8,10 @@ library(stargazer)
 
 rm(list = ls())
 
+source("prepare_data.R")
+
 ############# Report research group practices ##################################
-dev_df <- readRDS("data/interim/dev_variables.rds")
+dev_df <- survey_df
 
 # count and proportion of responses to code_publishing question
 dev_df %>%
@@ -126,7 +128,7 @@ practice_use$practice <- factor(practice_use$practice,
 
 
 px_practice_with_counts <- ggplot(na.omit(practice_use), aes(x = practice, fill = as.factor(frequency))) +
-  geom_bar(position = "fill") +
+  geom_bar(position = position_fill(reverse = TRUE)) +
   labs(x = "Development Practice", y = "Proportion of respondents", fill = "Usage Frequency") +
   scale_fill_brewer(palette = "BrBG", breaks = 0:5,
                       labels = c("Unfamiliar\nwith practice", 
@@ -136,8 +138,8 @@ px_practice_with_counts <- ggplot(na.omit(practice_use), aes(x = practice, fill 
                                  "Most of the time", 
                                 "Always")) +
   coord_flip() + 
-  # add text labels with count of each filled bar
-  geom_text(stat = 'count', aes(label=..count..), position=position_fill(vjust=0.5), size=3)
+  geom_text(stat = 'count', aes(label = ..count..), position = position_fill(vjust = 0.5, reverse = TRUE), size = 3) +
+  guides(fill = guide_legend(reverse = TRUE))
 px_practice_with_counts
 
 ggsave(px_practice_with_counts, 
@@ -145,16 +147,9 @@ ggsave(px_practice_with_counts,
        width = 8, height =5, dpi = 300)
 
 # How does usage of development practices vary with years of programming experience?
-df <- readRDS("data/interim/demo_variables.rds")
-
-dev_df <- dev_df %>%
-  left_join(., df %>% select(ResponseId, logyears_program_exp), by = "ResponseId")
+# (logyears_program_exp and research_area_major are already in survey_df)
 
 cor.test(dev_df$logyears_program_exp, dev_df$dev_score, use = "complete.obs", method = "pearson")
-
-
-dev_df <- dev_df %>%
-  left_join(., df %>% select(ResponseId, research_area_major), by = "ResponseId")
 
 ggplot(dev_df, aes(x = research_area_major, y = dev_score)) +
   geom_boxplot() +
