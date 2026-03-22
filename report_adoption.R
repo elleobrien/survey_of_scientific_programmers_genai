@@ -7,10 +7,10 @@ library(stargazer)
 
 rm(list =ls())
 
-# Reporting on adoption
-adopt_df <- readRDS("data/interim/genai_variables.rds")
+source("prepare_data.R")
 
-df <- readRDS("data/interim/demo_variables.rds")
+# Reporting on adoption
+adopt_df <- survey_df
 
 
 # How many respondents answered at all about genai usage?
@@ -30,13 +30,23 @@ ggsave(px_adopt, filename = "figures/genai_adoption_barchart.png",
 
 table(adopt_df$genai_tool_freq)
 
-# Does adoption % differ by field? 
-adopt_df <- adopt_df %>%
-  left_join(., df %>% select(ResponseId, research_area_major, years_program_exp, logyears_program_exp, current_position_recode), by = "ResponseId")
-
+# Does adoption % differ by field?
+# (research_area_major, years_program_exp, etc. already in survey_df)
 
 # Add line breaks to very long levels in "research_area_major" before plotting
 adopt_df$research_area_major <- gsub("Geosciences, atmospheric sciences & ocean sciences", "Geosciences, atmospheric sciences\n& ocean sciences", adopt_df$research_area_major)
+
+
+# reorder the factors for fields in order of descending adoption (Always + Most of the time) 
+adoption_order <- adopt_df %>%
+  filter(!is.na(genai_tool_freq)) %>%
+  group_by(research_area_major) %>%
+  summarise(adoption_rate = sum(genai_tool_freq %in% c("Most of the time", "Always")) / n()) %>%
+  arrange(adoption_rate) %>%
+  pull(research_area_major)
+
+# apply this order to the factors in adopt_df
+adopt_df$research_area_major <- factor(adopt_df$research_area_major, levels = adoption_order)
 
 # make a stacked bar chart of adoption rate by research area
 # make this nice for the manuscript
@@ -47,7 +57,7 @@ px_adopt_by_field <- adopt_df %>%
   group_by(research_area_major) %>%
   mutate(prop = count / sum(count)) %>%
   ggplot(., aes(x = research_area_major, y = prop, fill = genai_tool_freq)) +
-  geom_bar(stat = "identity") +
+  geom_bar(stat = "identity", position = position_fill(reverse = TRUE)) +
   coord_flip() +
   xlab("") +
   ylab("Proportion of respondents") +
@@ -55,8 +65,8 @@ px_adopt_by_field <- adopt_df %>%
   # make all text size larger for readability
   theme(text = element_text(size = 16)) +
   scale_fill_brewer(palette = "PRGn", name = "")+
-  geom_text(aes(label = count), position=position_fill(vjust=0.5), size=4)
-
+  guides(fill = guide_legend(reverse = TRUE)) + 
+  geom_text(aes(label = count), position = position_fill(vjust = 0.5, reverse = TRUE), size = 4)
 px_adopt_by_field
 
 ggsave(px_adopt_by_field, filename = "figures/genai_adoption_by_field.png",
@@ -70,6 +80,16 @@ anova_res <- anova(lm(as.numeric(genai_tool_freq) ~ research_area_major, data = 
 paste("ANOVA results: F(", anova_res$Df[1], ",", anova_res$Df[2], ") = ", round(anova_res$`F value`[1], 2), ", p = ", signif(anova_res$`Pr(>F)`[1], 3), "\n", sep = "")
 
 ###### Research role effects
+# Order the factors in current_position_recode by descending adoption (Always + Most of the time)
+adoption_order_role <- adopt_df %>%
+  filter(!is.na(genai_tool_freq)) %>%
+  filter(!(current_position_recode == "Other (self-describe)")) %>% #
+  group_by(current_position_recode) %>%
+  summarise(adoption_rate = sum(genai_tool_freq %in% c("Most of the time", "Always")) / n()) %>%
+  arrange(adoption_rate) %>%
+  pull(current_position_recode)
+adopt_df$current_position_recode <- factor(adopt_df$current_position_recode, levels = adoption_order_role)
+
 px_adopt_by_role <- adopt_df %>%
   filter(!is.na(genai_tool_freq)) %>%
   filter(!(current_position_recode == "Other (self-describe)")) %>% # category small for stable estimation, so drop it for visual
@@ -78,7 +98,7 @@ px_adopt_by_role <- adopt_df %>%
   group_by(current_position_recode) %>%
   mutate(prop = count / sum(count)) %>%
   ggplot(., aes(x = current_position_recode, y = prop, fill = genai_tool_freq)) +
-  geom_bar(stat = "identity") +
+  geom_bar(stat = "identity", position = position_fill(reverse = TRUE)) +
   coord_flip() +
   theme(text = element_text(size = 16)) +
   xlab("") +
@@ -86,9 +106,11 @@ px_adopt_by_role <- adopt_df %>%
   ggtitle("How often do you use a genAI tool in your research-related
 programming?") +
   scale_fill_brewer(palette = "PRGn", name = "")+
-  geom_text(aes(label = count), position=position_fill(vjust=0.5), size=4) 
+  guides(fill = guide_legend(reverse = TRUE)) + 
+  geom_text(aes(label = count), position = position_fill(vjust = 0.5, reverse = TRUE), size = 4)
 
 px_adopt_by_role
+
 ggsave(px_adopt_by_role, filename = "figures/genai_adoption_by_role.png",
        dpi = 300,
        height =8, width = 10)
@@ -126,10 +148,7 @@ return(p_value)
 poly_to_pvalue(poly_tool_freq)
 
 ########## Gender difference
-# merge in gender info from demo_df
-demo_df <- readRDS("data/interim/demo_variables.rds")
-adopt_df <- adopt_df %>%
-  left_join(demo_df %>% select(ResponseId, gender), by = "ResponseId")
+# (gender already in survey_df)
 
 gender_lm <- lm(as.numeric(genai_tool_freq) ~ gender, data = subset(adopt_df, gender != "Prefer not to say")) 
 gender_anova_res <- anova(gender_lm)
@@ -140,19 +159,41 @@ gender_lm %>% summary()
 
 stargazer(gender_lm, title = "Adoption and gender", align = TRUE)
 
- ################### gender################### TOOL CHOICE #########################
-# What tools are being used?
-genai_tools <- readRDS("data/interim/genai_tools.rds")
+px_adopt_by_gender <- adopt_df %>%
+  filter(!is.na(genai_tool_freq)) %>%
+  filter(gender != "Prefer not to say") %>%
+  group_by(gender, genai_tool_freq) %>%
+  summarise(count = n()) %>%
+  group_by(gender) %>%
+  mutate(prop = count / sum(count)) %>%
+  ggplot(., aes(x = gender, y = prop, fill = genai_tool_freq)) +
+  geom_bar(stat = "identity", position = position_fill(reverse = TRUE)) +
+  coord_flip() +
+  theme(text = element_text(size = 16)) +
+  xlab("") +
+  ylab("Proportion of respondents") +
+  ggtitle("How often do you use a genAI tool in your research-related
+programming?") +
+  scale_fill_brewer(palette = "PRGn", name = "")+
+  guides(fill = guide_legend(reverse = TRUE)) + 
+  geom_text(aes(label = count), position = position_fill(vjust = 0.5, reverse = TRUE), size = 4)
+px_adopt_by_gender
 
-# Median number of tools tried? 
-tools_per_person <- genai_tools %>%
+ggsave(px_adopt_by_gender, filename = "figures/genai_adoption_by_gender.png", 
+       dpi = 300, height =5, width = 10)
+
+ ################### gender################### TOOL CHOICE #########################
+# What tools are being used? (tried_* columns created in prepare_data.R)
+
+# Median number of tools tried?
+tools_per_person <- adopt_df %>%
   select(starts_with("tried_")) %>%
   rowSums(.)
 median(tools_per_person)
 
-# What about actual tool CHOSEN? 
+# What about actual tool CHOSEN?
 genai_tool_choice <- adopt_df %>%
-  select(ResponseId, genai_primary_tool_choice) %>%
+  select(genai_primary_tool_choice) %>%
   filter(!is.na(genai_primary_tool_choice)) %>%
   group_by(genai_primary_tool_choice) %>%
   summarise(count = n()) %>%
@@ -265,7 +306,7 @@ adopt_df %>%
   filter(!is.na(genai_lines_accepted)) %>%
   ggplot(., aes(x = genai_lines_accepted)) +
   geom_bar() +
-  facet_wrap(~is_code_tool) + 
+  facet_wrap(~tool_type) + 
   coord_flip() +
   xlab("") +
   ggtitle("How many lines of generated code suggestions do you\ntypically accept at one time when working with this tool?", 

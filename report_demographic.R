@@ -8,8 +8,8 @@ library(stargazer)
 
 rm(list = ls())
 
-
-df <- readRDS("data/interim/demo_variables.rds")
+source("prepare_data.R")
+df <- survey_df
 
 # What countries are most common?
 table(df$country)
@@ -131,11 +131,8 @@ df %>%
 
 
 
-# Programming language counts
-langs <- readRDS("data/interim/programming_languages.rds")
-
-# Make a chart of languages in descending order
-lang_freq <- langs %>%
+# Programming language counts (uses_* columns created in prepare_data.R)
+lang_freq <- df %>%
   select(starts_with("uses_")) %>%
   colSums(.)
 
@@ -145,11 +142,11 @@ names(lang_freq) <- gsub("uses_", "", names(lang_freq))
 # Table for manuscript
 lang_freq %>%
   sort(decreasing = TRUE) %>%
-  kable(col.names = c("Language", "Count"), 
+  kable(col.names = c("Language", "Count"),
         format = "latex", booktabs = TRUE, linesep = "")
 
 # How many lanugages are used per person?
-langs_per_person <- langs %>%
+langs_per_person <- df %>%
   select(starts_with("uses_")) %>%
   rowSums(.)
 median(langs_per_person)
