@@ -1,6 +1,6 @@
 # README
 
-This code is a replication package for quantitative analyses in "A survey of generative AI adoption and perceived productivity among scientists who program" (2025). A deidentified dataset is provided in data/processed.
+This code is a replication package for quantitative analyses in "A survey of generative AI adoption and perceived productivity among scientists who program" (2025). A deidentified dataset is provided in `data/processed`.
 
 - Summary statistics and accompanying figures/tables are computed `report_`* files.
 - Hypothesis testing and modeling pertaining to factors associated with perceived productivity are in `productivity_factors.R`.
