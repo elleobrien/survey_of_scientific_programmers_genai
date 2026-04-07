@@ -1,4 +1,5 @@
 # README
+[![DOI](https://zenodo.org/badge/1119152548.svg)](https://doi.org/10.5281/zenodo.19456945)
 
 This code is a replication package for quantitative analyses in "A survey of generative AI adoption and perceived productivity among scientists who program" (2025). A deidentified dataset is provided in `data/processed`.
 
